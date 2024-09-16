@@ -23,32 +23,35 @@ export default function ReactCalendar() {
     end: Date;
   } | null>(null);
   const [title, setTitle] = useState(""); // Dodanie stanu do przechowywania tytułu
+  const [error, setError] = useState<string | null>(null); // Przechowywanie błędu
 
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     setSelectedSlot({ start, end });
     setIsModalOpen(true); // Otwórz modal po kliknięciu slotu
+    setError(null); // Resetuj błędy przy otwieraniu nowego modala
   };
 
   const handleSaveEvent = () => {
     if (!title.trim()) {
-      alert("Please enter a title for the event.");
+      setError("Title is required."); // Ustawienie błędu, jeśli tytuł jest pusty
       return;
     }
 
-    if (selectedSlot) {
+    if (selectedSlot && startDate && endDate && startDate <= endDate) {
       const newEvent = {
         title,
-        start: startDate || selectedSlot.start, // Użyj wybranej daty rozpoczęcia lub domyślnej
-        end: endDate || selectedSlot.end, // Użyj wybranej daty zakończenia lub domyślnej
+        start: startDate,
+        end: endDate,
       };
       setEvents([...events, newEvent]);
-    }
 
-    // Resetowanie stanu po zapisaniu wydarzenia
-    setStartDate(new Date()); // Ustaw ponownie na dzisiejszą datę
-    setEndDate(new Date()); // Ustaw ponownie na dzisiejszą datę
-    setTitle("");
-    setIsModalOpen(false); // Zamknij modal po zapisaniu wydarzenia
+      // Resetowanie stanu po zapisaniu wydarzenia
+      setStartDate(new Date());
+      setEndDate(new Date());
+      setTitle("");
+      setError(null); // Reset błędu po poprawnym dodaniu
+      setIsModalOpen(false); // Zamknij modal po zapisaniu wydarzenia
+    }
   };
 
   return (
@@ -74,6 +77,8 @@ export default function ReactCalendar() {
                 placeholder="Enter event title"
                 style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
               />
+              {error && <p style={{ color: "red" }}>{error}</p>}{" "}
+              {/* Wyświetlanie błędu */}
             </div>
 
             {/* Wybór daty rozpoczęcia */}
@@ -95,7 +100,14 @@ export default function ReactCalendar() {
               <label>End Date: </label>
               <DatePicker
                 selected={endDate}
-                onChange={(date: Date | null) => setEndDate(date)}
+                onChange={(date: Date | null) => {
+                  if (date && startDate && date >= startDate) {
+                    setEndDate(date);
+                    setError(null); // Reset błędu, jeśli wszystko jest poprawne
+                  } else {
+                    setError("End date must be after start date."); // Ustawienie błędu, jeśli data zakończenia jest wcześniejsza niż data rozpoczęcia
+                  }
+                }}
                 showTimeSelect
                 timeFormat="HH:mm"
                 timeIntervals={15}
@@ -105,7 +117,12 @@ export default function ReactCalendar() {
             </div>
 
             {/* Przyciski do zapisania lub anulowania */}
-            <button onClick={handleSaveEvent}>Save Event</button>
+            <button
+              onClick={handleSaveEvent}
+              disabled={!title || (endDate && startDate && endDate < startDate)}
+            >
+              Save Event
+            </button>
             <button onClick={() => setIsModalOpen(false)}>Cancel</button>
           </div>
         </div>
