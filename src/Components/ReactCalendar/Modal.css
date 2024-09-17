@@ -42,3 +42,13 @@ button:last-child {
 button:last-child:hover {
   background-color: #5a6268;
 }
+
+.color-picker {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+input[type="time"] {
+  width: 100px;
+  margin: 5px 0;
+}
