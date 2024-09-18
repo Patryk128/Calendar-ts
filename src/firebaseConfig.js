@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_APP_ID,
+  apiKey: import.meta.env.VITE_API_KEY,
   authDomain: "calendar-moment.firebaseapp.com",
   projectId: "calendar-moment",
   storageBucket: "calendar-moment.appspot.com",
