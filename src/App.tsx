@@ -7,6 +7,7 @@ import Register from "./Register.tsx";
 
 export default function App() {
   const [user, setUser] = useState<any>(null); // Przechowywanie stanu zalogowanego użytkownika
+  const [showRegister, setShowRegister] = useState(false); // Dodany stan do przełączania widoku
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -21,6 +22,10 @@ export default function App() {
     setUser(null);
   };
 
+  const toggleView = () => {
+    setShowRegister(!showRegister); // Zmiana stanu widoku
+  };
+
   return (
     <div style={{ height: "95vh" }}>
       {user ? (
@@ -31,8 +36,17 @@ export default function App() {
       ) : (
         <>
           <h1>Welcome! Please log in or register.</h1>
-          <Login />
-          <Register />
+          {showRegister ? (
+            <>
+              <Register />
+              <button onClick={toggleView}>Back to Login</button>
+            </>
+          ) : (
+            <>
+              <Login />
+              <button onClick={toggleView}>Go to Register</button>
+            </>
+          )}
         </>
       )}
     </div>

@@ -15,6 +15,7 @@ import "./Modal.css";
 
 export default function ReactCalendar() {
   const [events, setEvents] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,6 +29,8 @@ export default function ReactCalendar() {
   const [color, setColor] = useState<string>("#FF0000");
   const [startTime, setStartTime] = useState<string>("12:00");
   const [endTime, setEndTime] = useState<string>("12:00");
+  const [isTask, setIsTask] = useState(false); // New state to toggle between event and task
+  const [editTask, setEditTask] = useState(false); // New state to track if we're editing a task
 
   const fetchEvents = async () => {
     try {
@@ -42,14 +45,29 @@ export default function ReactCalendar() {
     }
   };
 
+  const fetchTasks = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "tasks"));
+      const fetchedTasks = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTasks(fetchedTasks);
+    } catch (error) {
+      console.error("Error fetching tasks: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
+    fetchTasks();
   }, []);
 
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     setSelectedSlot({ start, end });
     setTitle("");
     setEditEventId(null);
+    setEditTask(false);
     setError(null);
     setStartDate(start);
     setEndDate(start);
@@ -68,6 +86,8 @@ export default function ReactCalendar() {
     setError(null);
     setIsModalOpen(false);
     setEditEventId(null);
+    setEditTask(false); // Reset task edit state
+    setIsTask(false); // Reset to default (event)
   };
 
   const combineDateAndTime = (date: Date | null, time: string): Date | null => {
@@ -80,68 +100,98 @@ export default function ReactCalendar() {
     return newDate;
   };
 
-  const handleSaveEvent = async () => {
+  const handleSave = async () => {
     if (!title.trim()) {
       setError("Title is required.");
       return;
     }
 
     const combinedStartDate = combineDateAndTime(startDate, startTime);
-    const combinedEndDate = combineDateAndTime(endDate, endTime);
 
-    if (
-      combinedStartDate &&
-      combinedEndDate &&
-      combinedStartDate <= combinedEndDate
-    ) {
-      const newEvent = {
+    if (isTask) {
+      // Save or update task
+      const newTask = {
         title,
         start: combinedStartDate,
-        end: combinedEndDate,
         color,
       };
 
       try {
-        if (editEventId) {
-          const eventRef = doc(db, "events", editEventId);
-          await updateDoc(eventRef, newEvent);
+        if (editTask) {
+          const taskRef = doc(db, "tasks", editEventId!);
+          await updateDoc(taskRef, newTask);
         } else {
-          await addDoc(collection(db, "events"), newEvent);
+          await addDoc(collection(db, "tasks"), newTask);
         }
 
-        fetchEvents();
+        fetchTasks();
         resetForm();
       } catch (error) {
-        console.error("Error saving event: ", error);
+        console.error("Error saving task: ", error);
       }
     } else {
-      setError("Start date/time must be before end date/time.");
+      // Save or update event
+      const combinedEndDate = combineDateAndTime(endDate, endTime);
+
+      if (
+        combinedStartDate &&
+        combinedEndDate &&
+        combinedStartDate <= combinedEndDate
+      ) {
+        const newEvent = {
+          title,
+          start: combinedStartDate,
+          end: combinedEndDate,
+          color,
+        };
+        try {
+          if (editEventId && !editTask) {
+            const eventRef = doc(db, "events", editEventId);
+            await updateDoc(eventRef, newEvent);
+          } else {
+            await addDoc(collection(db, "events"), newEvent);
+          }
+          fetchEvents();
+          resetForm();
+        } catch (error) {
+          console.error("Error saving event: ", error);
+        }
+      } else {
+        setError("Start date/time must be before end date/time.");
+      }
     }
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = async (eventId: string, isTaskItem: boolean) => {
     try {
-      await deleteDoc(doc(db, "events", eventId));
-      fetchEvents();
+      const collectionName = isTaskItem ? "tasks" : "events";
+      await deleteDoc(doc(db, collectionName, eventId));
+      if (isTaskItem) {
+        fetchTasks();
+      } else {
+        fetchEvents();
+      }
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Error deleting event: ", error);
+      console.error("Error deleting event or task: ", error);
     }
   };
 
-  const handleEventClick = (event: any) => {
+  const handleEventClick = (event: any, isTaskItem = false) => {
     const startDate = event.start.seconds
       ? new Date(event.start.seconds * 1000)
       : new Date(event.start);
 
-    const endDate = event.end.seconds
+    const endDate = event.end?.seconds
       ? new Date(event.end.seconds * 1000)
-      : new Date(event.end);
+      : new Date(event.end || event.start); // Tasks do not have end dates
 
     setTitle(event.title);
     setStartDate(startDate);
     setEndDate(endDate);
     setEditEventId(event.id);
+    setEditTask(isTaskItem); // Set whether we're editing a task
+    setIsTask(isTaskItem); // Show task-related fields accordingly
     setIsModalOpen(true);
   };
 
@@ -149,25 +199,41 @@ export default function ReactCalendar() {
     <div>
       <div style={{ height: "80vh" }}>
         <Calendar
-          events={events.map((event) => ({
-            ...event,
-            start: new Date(event.start.seconds * 1000),
-            end: new Date(event.end.seconds * 1000),
-            color: event.color || "#FF0000",
-          }))}
+          events={[
+            ...events.map((event) => ({
+              ...event,
+              start: new Date(event.start.seconds * 1000),
+              end: new Date(event.end.seconds * 1000),
+              color: event.color || "#FF0000",
+            })),
+            ...tasks.map((task) => ({
+              ...task,
+              start: new Date(task.start.seconds * 1000),
+              end: new Date(task.start.seconds * 1000), // Tasks have no end time
+              color: task.color || "#00FF00", // Optional: Different color for tasks
+            })),
+          ]}
           eventPropGetter={(event) => ({
             style: { backgroundColor: event.color },
           })}
           selectable
           onSelectSlot={handleSelectSlot}
-          onSelectEvent={handleEventClick}
+          onSelectEvent={(event) => handleEventClick(event, !!event.end)} // If no end time, it's a task
         />
       </div>
 
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <h3>{editEventId ? "Edit Event" : "Add New Event"}</h3>
+            <h3>
+              {editEventId
+                ? editTask
+                  ? "Edit Task"
+                  : "Edit Event"
+                : isTask
+                ? "Add New Task"
+                : "Add New Event"}
+            </h3>
             <label>Title:</label>
             <input
               type="text"
@@ -175,6 +241,28 @@ export default function ReactCalendar() {
               onChange={(e) => setTitle(e.target.value)}
             />
             {error && <p style={{ color: "red" }}>{error}</p>}
+
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  name="event-task-toggle"
+                  checked={!isTask}
+                  onChange={() => setIsTask(false)}
+                />
+                Event
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="event-task-toggle"
+                  checked={isTask}
+                  onChange={() => setIsTask(true)}
+                />
+                Task
+              </label>
+            </div>
+
             <label>Start Date:</label>
             <DatePicker
               selected={startDate}
@@ -189,32 +277,28 @@ export default function ReactCalendar() {
             <input
               type="time"
               value={startTime}
-              onChange={(e) => {
-                setStartTime(e.target.value);
-                const [hours, minutes] = e.target.value.split(":").map(Number);
-                const endHours = (hours + 1) % 24;
-                setEndTime(
-                  `${endHours.toString().padStart(2, "0")}:${minutes
-                    .toString()
-                    .padStart(2, "0")}`
-                );
-              }}
+              onChange={(e) => setStartTime(e.target.value)}
               required
             />
-            <label>End Date:</label>
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              dateFormat="yyyy/MM/dd"
-              placeholderText="Select end date"
-            />
-            <label>End Time (24h format):</label>
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              required
-            />
+            {!isTask && (
+              <>
+                <label>End Date:</label>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  dateFormat="yyyy/MM/dd"
+                  placeholderText="Select end date"
+                />
+                <label>End Time (24h format):</label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                />
+              </>
+            )}
+
             <label>Color:</label>
             <div className="color-picker">
               {[
@@ -241,15 +325,16 @@ export default function ReactCalendar() {
                 />
               ))}
             </div>
-            <button onClick={handleSaveEvent}>
-              {editEventId ? "Update Event" : "Save Event"}
+
+            <button onClick={handleSave}>
+              {editEventId ? "Update" : "Save"}
             </button>
-            <button onClick={() => resetForm()}>Cancel</button>
             {editEventId && (
-              <button onClick={() => handleDeleteEvent(editEventId)}>
-                Delete Event
+              <button onClick={() => handleDeleteEvent(editEventId, isTask)}>
+                Delete
               </button>
             )}
+            <button onClick={resetForm}>Cancel</button>
           </div>
         </div>
       )}
