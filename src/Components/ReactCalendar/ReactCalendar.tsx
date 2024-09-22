@@ -1,8 +1,5 @@
-import Calendar from "../Calendar";
-import { useRef } from "react";
-import { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useState, useEffect, useRef } from "react";
+import Calendar from "../Calendar"; // Assuming you have this imported correctly
 import {
   collection,
   addDoc,
@@ -11,102 +8,57 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { db } from "../../firebaseConfig.js";
+import { db } from "../../firebaseConfig.js"; // Firebase config import
+import Modal from "./Modal"; // Import the Modal component
 import "./Modal.css";
-
-// Notification component for reminders
-function Notification({
-  message,
-  id,
-  onClose,
-}: {
-  message: string;
-  id: string;
-  onClose: (id: string) => void;
-}) {
-  useEffect(() => {
-    // Automatyczne zamknięcie powiadomienia po 5 sekundach
-    const timer = setTimeout(() => onClose(id), 5000);
-    return () => clearTimeout(timer); // Sprzątanie timera, gdy komponent zostanie odmontowany
-  }, [id, onClose]);
-
-  return (
-    <div
-      className="notification"
-      style={{
-        position: "fixed",
-        bottom: "20px",
-        right: "20px",
-        backgroundColor: "#444",
-        color: "#fff",
-        padding: "10px",
-        borderRadius: "5px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "250px",
-        marginBottom: "10px",
-      }}
-    >
-      <span>{message}</span>
-      <button
-        onClick={() => onClose(id)}
-        style={{
-          backgroundColor: "transparent",
-          border: "none",
-          color: "#fff",
-          fontSize: "16px",
-          cursor: "pointer",
-          marginLeft: "10px",
-        }}
-      >
-        &times;
-      </button>
-    </div>
-  );
-}
 
 export default function ReactCalendar() {
   const [events, setEvents] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [color, setColor] = useState("#FF0000");
+  const [startTime, setStartTime] = useState("12:00");
+  const [endTime, setEndTime] = useState("13:00");
+  const [isReminder, setIsReminder] = useState(false);
+  const [reminderDays, setReminderDays] = useState(1);
+  const [error, setError] = useState<string | null>(null);
+  const [editEventId, setEditEventId] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{
     start: Date;
     end: Date;
   } | null>(null);
-  const [title, setTitle] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [editEventId, setEditEventId] = useState<string | null>(null);
-  const [color, setColor] = useState<string>("#FF0000");
-  const [startTime, setStartTime] = useState<string>("12:00");
-  const [endTime, setEndTime] = useState<string>("13:00");
   const [notificationsQueue, setNotificationsQueue] = useState<
     { id: string; message: string }[]
   >([]);
+
   const [activeNotification, setActiveNotification] = useState<{
     id: string;
     message: string;
   } | null>(null);
+
   const notificationInProgress = useRef(false);
 
-  // State for reminders
-  const [isReminder, setIsReminder] = useState(false);
-  const [reminderDays, setReminderDays] = useState<number>(1);
-  const [notifications, setNotifications] = useState<
-    { id: string; message: string }[]
-  >([]);
-
+  // Fetch events from Firestore
   const fetchEvents = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "events"));
-      const fetchedEvents = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const fetchedEvents = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title,
+          start: new Date(data.start.seconds * 1000), // Zamiana Firebase Timestamp na Date
+          end: new Date(data.end.seconds * 1000), // Zamiana Firebase Timestamp na Date
+          color: data.color || "#FF0000",
+          isReminder: data.isReminder || false,
+          reminderDays: data.reminderDays || 1,
+        };
+      });
       setEvents(fetchedEvents);
     } catch (error) {
-      console.error("Error fetching events: ", error);
+      console.error("Błąd podczas pobierania wydarzeń: ", error);
     }
   };
 
@@ -114,34 +66,19 @@ export default function ReactCalendar() {
     fetchEvents();
   }, []);
 
-  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
-    setSelectedSlot({ start, end });
-    setTitle("");
-    setEditEventId(null);
-    setError(null);
-    setStartDate(start);
-    setEndDate(start);
-    setStartTime("12:00");
-    setEndTime("13:00");
-    setIsModalOpen(true);
-    setIsReminder(false); // Reset reminder checkbox
-    setReminderDays(1); // Reset reminder days input
-  };
-
   const resetForm = () => {
+    setIsModalOpen(false);
+    setTitle("");
     setStartDate(null);
     setEndDate(null);
+    setColor("#FF0000");
     setStartTime("12:00");
     setEndTime("13:00");
-    setTitle("");
-    setColor("#FF0000");
-    setError(null);
-    setIsModalOpen(false);
-    setEditEventId(null);
     setIsReminder(false);
     setReminderDays(1);
+    setError(null);
+    setEditEventId(null);
   };
-
   const combineDateAndTime = (date: Date | null, time: string): Date | null => {
     if (!date || !time) return null;
 
@@ -150,13 +87,6 @@ export default function ReactCalendar() {
     newDate.setHours(hours);
     newDate.setMinutes(minutes);
     return newDate;
-  };
-  const addNotification = (message: string) => {
-    const newNotification = {
-      id: `${Date.now()}`,
-      message,
-    };
-    setNotificationsQueue((prevQueue) => [...prevQueue, newNotification]);
   };
 
   const handleSave = async () => {
@@ -181,13 +111,16 @@ export default function ReactCalendar() {
         isReminder,
         reminderDays,
       };
+
       try {
         if (editEventId) {
           const eventRef = doc(db, "events", editEventId);
           await updateDoc(eventRef, newEvent);
+          console.log("Event updated successfully!");
           addNotification("Event updated successfully!");
         } else {
           await addDoc(collection(db, "events"), newEvent);
+          console.log("Event added successfully!");
           addNotification("Event added successfully!");
         }
         fetchEvents();
@@ -199,12 +132,12 @@ export default function ReactCalendar() {
       setError("Start date/time must be before end date/time.");
     }
   };
-
   const handleDeleteEvent = async (eventId: string) => {
     try {
       await deleteDoc(doc(db, "events", eventId));
       fetchEvents();
-      setIsModalOpen(false);
+      resetForm();
+      console.log("Event deleted successfully!");
       addNotification("Event deleted successfully!");
     } catch (error) {
       console.error("Error deleting event: ", error);
@@ -212,207 +145,179 @@ export default function ReactCalendar() {
   };
 
   const handleEventClick = (event: any) => {
-    const startDate = event.start.seconds
-      ? new Date(event.start.seconds * 1000)
-      : new Date(event.start);
-
-    const endDate = event.end?.seconds
-      ? new Date(event.end.seconds * 1000)
-      : null;
-
+    console.log("Clicked event:", event); // Loguj kliknięcia dla debugowania
     setTitle(event.title);
-    setStartDate(startDate);
-    setEndDate(endDate || startDate);
+    setStartDate(new Date(event.start)); // Konwersja startu na Date
+    setEndDate(new Date(event.end)); // Konwersja końca na Date
     setEditEventId(event.id);
-    setIsModalOpen(true);
+    setIsModalOpen(true); // Otwórz modal
     setIsReminder(event.isReminder || false);
     setReminderDays(event.reminderDays || 1);
   };
-
-  // Check if any reminder is due (run on every render)
   useEffect(() => {
-    const today = new Date();
+    const checkForUpcomingEvents = () => {
+      const now = new Date(); // Aktualna data
+      console.log("Aktualna data i czas:", now);
 
-    // Sortowanie wydarzeń w kolejności od najbliższych do najdalszych
-    const sortedEvents = [...events].sort((a, b) => {
-      const eventAStartDate = new Date(a.start.seconds * 1000);
-      const eventBStartDate = new Date(b.start.seconds * 1000);
-      return eventAStartDate.getTime() - eventBStartDate.getTime();
-    });
+      events.forEach((event) => {
+        if (event.isReminder) {
+          const eventStartDate = new Date(event.start); // Data rozpoczęcia wydarzenia
+          const reminderDate = new Date(eventStartDate); // Kopia daty rozpoczęcia
 
-    const newNotifications = [];
+          // Odejmowanie dni przypomnienia od daty wydarzenia
+          reminderDate.setDate(reminderDate.getDate() - event.reminderDays);
 
-    sortedEvents.forEach((event) => {
-      if (event.isReminder) {
-        const eventStartDate = new Date(event.start.seconds * 1000);
-        const reminderDate = new Date(eventStartDate);
-        reminderDate.setDate(reminderDate.getDate() - event.reminderDays);
-
-        // Sprawdzamy, czy przypomnienie powinno się było już pojawić
-        if (reminderDate <= today && eventStartDate >= today) {
-          const daysUntilEvent = Math.ceil(
-            (eventStartDate.getTime() - today.getTime()) / (1000 * 3600 * 24)
+          console.log(
+            `Przypomnienie dla wydarzenia "${event.title}" planowane na:`,
+            reminderDate
           );
-          newNotifications.push({
-            id: `${event.id}-${Date.now()}`, // Unikalny ID dla każdego powiadomienia
-            message: `Reminder: ${event.title} is coming up in ${daysUntilEvent} days!`,
-          });
+
+          // Sprawdzanie, czy aktualna data jest między datą przypomnienia a datą wydarzenia
+          if (reminderDate <= now && now < eventStartDate) {
+            // Obliczanie liczby dni do wydarzenia
+            const daysUntilEvent = Math.ceil(
+              (eventStartDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            // Dodanie powiadomienia do kolejki
+            addNotificationToQueue(
+              `Przypomnienie: Wydarzenie "${event.title}" odbędzie się za ${daysUntilEvent} dni!`
+            );
+          } else {
+            console.log(
+              `Przypomnienie dla wydarzenia "${event.title}" nie jest jeszcze wyświetlane.`
+            );
+          }
         }
-      }
-    });
+      });
+    };
 
-    // Dodaj nowe powiadomienia do kolejki
-    setNotificationsQueue((prevQueue) => [...prevQueue, ...newNotifications]);
+    // Uruchomienie sprawdzania przypomnień na starcie aplikacji
+    checkForUpcomingEvents();
+
+    if (events.length > 0) {
+      const reminderInterval = setInterval(checkForUpcomingEvents, 60000); // Sprawdzanie co minutę
+      return () => clearInterval(reminderInterval); // Czyszczenie interwału przy odmontowaniu komponentu
+    }
   }, [events]);
-
+  const addNotificationToQueue = (message: string) => {
+    const newNotification = {
+      id: `${Date.now()}`,
+      message,
+    };
+    setNotificationsQueue((prevQueue) => [...prevQueue, newNotification]);
+  };
   useEffect(() => {
     if (!notificationInProgress.current && notificationsQueue.length > 0) {
       const nextNotification = notificationsQueue[0];
       setActiveNotification(nextNotification);
-      notificationInProgress.current = true; // Blokujemy kolejne powiadomienia do czasu zamknięcia bieżącego
+      notificationInProgress.current = true; // Blokuj wyświetlanie kolejnych powiadomień, dopóki obecne nie zostanie zamknięte
     }
   }, [notificationsQueue]);
 
-  // Funkcja do zamykania powiadomienia
   const closeNotification = (id: string) => {
-    setActiveNotification(null); // Usuwamy aktywne powiadomienie
+    setActiveNotification(null);
     setNotificationsQueue((prevQueue) =>
       prevQueue.filter((notification) => notification.id !== id)
     );
-    notificationInProgress.current = false; // Odblokowujemy kolejne powiadomienia
+    notificationInProgress.current = false; // Odblokuj, by można było wyświetlić kolejną notyfikację
+
+    // Po zamknięciu aktualnej notyfikacji, sprawdź, czy jest więcej powiadomień w kolejce
+    if (notificationsQueue.length > 1) {
+      const nextNotification = notificationsQueue[1]; // Pobieramy kolejną notyfikację
+      setActiveNotification(nextNotification);
+      notificationInProgress.current = true; // Ustawiamy flagę, by uniknąć jednoczesnego wyświetlania
+    }
   };
 
+  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
+    setSelectedSlot({ start, end });
+    setTitle("");
+    setEditEventId(null);
+    setError(null);
+    setStartDate(start);
+    setEndDate(end);
+    setStartTime("12:00");
+    setEndTime("13:00");
+    setIsModalOpen(true); // Otwórz modal
+    setIsReminder(false); // Resetowanie przypomnienia
+    setReminderDays(1); // Resetowanie dni przypomnienia
+  };
+  const addNotification = (message: string) => {
+    const newNotification = {
+      id: `${Date.now()}`,
+      message,
+    };
+    console.log("Dodawanie notyfikacji:", newNotification.message); // Sprawdź czy notyfikacja jest wywoływana
+    setNotificationsQueue((prevQueue) => [...prevQueue, newNotification]);
+  };
+
+  function Notification({
+    message,
+    id,
+    onClose,
+  }: {
+    message: string;
+    id: string;
+    onClose: (id: string) => void;
+  }) {
+    useEffect(() => {
+      // Timer automatycznie zamykający notyfikację po 5 sekundach
+      const timer = setTimeout(() => onClose(id), 2000);
+      return () => clearTimeout(timer); // Czyszczenie timera
+    }, [id, onClose]);
+
+    return (
+      <div className="notification">
+        <span>{message}</span>
+        <button onClick={() => onClose(id)}>&times;</button>
+      </div>
+    );
+  }
   return (
     <div>
-      <div style={{ height: "80vh" }}>
+      <div style={{ height: "100vh" }}>
         <Calendar
           events={events.map((event) => ({
             ...event,
-            start: new Date(event.start.seconds * 1000),
-            end: new Date(event.end.seconds * 1000),
-            color: event.color || "#FF0000",
+            start: new Date(event.start), // Upewnij się, że są to obiekty Date
+            end: new Date(event.end),
+            title: event.title,
+            color: event.color,
           }))}
-          eventPropGetter={(event) => ({
-            style: { backgroundColor: event.color },
-          })}
-          selectable
-          onSelectSlot={handleSelectSlot}
           onSelectEvent={handleEventClick}
+          onSelectSlot={handleSelectSlot}
+          selectable
+          eventPropGetter={(event) => ({
+            style: { backgroundColor: event.color }, // Styl dla wydarzeń
+          })}
         />
       </div>
 
-      {isModalOpen && (
-        <div className="modal" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>{editEventId ? "Edit Event" : "Add New Event"}</h3>
-            <label>Title:</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            {error && <p style={{ color: "red" }}>{error}</p>}
-
-            <label>Start Date:</label>
-            <DatePicker
-              selected={startDate || new Date()}
-              onChange={(date) => setStartDate(date)}
-              dateFormat="yyyy/MM/dd"
-              placeholderText="Select start date"
-            />
-            <label>Start Time (24h format):</label>
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              required
-            />
-
-            <label>End Date:</label>
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              dateFormat="yyyy/MM/dd"
-              placeholderText="Select end date"
-            />
-            <label>End Time (24h format):</label>
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              required
-            />
-
-            <label>Color:</label>
-            <div className="color-picker">
-              {[
-                "#FF0000",
-                "#00FF00",
-                "#0000FF",
-                "#FFFF00",
-                "#FF00FF",
-                "#00FFFF",
-                "#FFA500",
-                "#800080",
-              ].map((c) => (
-                <button
-                  key={c}
-                  style={{
-                    backgroundColor: c,
-                    width: "30px",
-                    height: "30px",
-                    border: c === color ? "3px solid black" : "none",
-                    cursor: "pointer",
-                    margin: "0 5px",
-                  }}
-                  onClick={() => setColor(c)}
-                />
-              ))}
-            </div>
-
-            {/* Reminder Checkbox and Days Input */}
-            <div>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isReminder}
-                  onChange={() => setIsReminder(!isReminder)}
-                />
-                Set Reminder
-              </label>
-              {isReminder && (
-                <div>
-                  <label>Reminder Days Before:</label>
-                  <input
-                    type="number"
-                    value={reminderDays}
-                    onChange={(e) => setReminderDays(parseInt(e.target.value))}
-                    min={1}
-                    max={30}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="modal-buttons">
-              <button onClick={handleSave}>
-                {editEventId ? "Update" : "Save"}
-              </button>
-              {editEventId && (
-                <button
-                  onClick={() => handleDeleteEvent(editEventId!)}
-                  style={{ backgroundColor: "red", color: "white" }}
-                >
-                  Delete
-                </button>
-              )}
-              <button onClick={resetForm}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Wyświetl aktywne powiadomienie */}
+      <Modal
+        isOpen={isModalOpen}
+        title={title}
+        startDate={startDate}
+        endDate={endDate}
+        startTime={startTime}
+        endTime={endTime}
+        color={color}
+        isReminder={isReminder}
+        reminderDays={reminderDays}
+        error={error}
+        setTitle={setTitle}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+        setStartTime={setStartTime}
+        setEndTime={setEndTime}
+        setColor={setColor}
+        setIsReminder={setIsReminder}
+        setReminderDays={setReminderDays}
+        handleSave={handleSave}
+        resetForm={resetForm}
+        editEventId={editEventId}
+        handleDeleteEvent={() => handleDeleteEvent(editEventId!)}
+      />
       {activeNotification && (
         <Notification
           key={activeNotification.id}
