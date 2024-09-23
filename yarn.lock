@@ -890,6 +890,16 @@ ansi-styles@^4.0.0:
   dependencies:
     color-convert "^2.0.1"
 
+argparse@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz"
+  integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
+
+astronomia@^4.1.0, astronomia@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/astronomia/-/astronomia-4.1.1.tgz"
+  integrity sha512-TcJD9lUC5eAo0/Ji7rnQauX/yQbi0yZWM+JsNr77W3OA5fsrgvuFgubLMFwfw4VlZ29cu9dG/yfJbfvuTSftjg==
+
 bootstrap@^5.3.3:
   version "5.3.3"
   resolved "https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.3.tgz"
@@ -904,6 +914,13 @@ browserslist@^4.21.3, "browserslist@>= 4.21.0":
     electron-to-chromium "^1.4.284"
     node-releases "^2.0.8"
     update-browserslist-db "^1.0.10"
+
+caldate@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.npmjs.org/caldate/-/caldate-2.0.5.tgz"
+  integrity sha512-JndhrUuDuE975KUhFqJaVR1OQkCHZqpOrJur/CFXEIEhWhBMjxO85cRSK8q4FW+B+yyPq6GYua2u4KvNzTcq0w==
+  dependencies:
+    moment-timezone "^0.5.43"
 
 caniuse-lite@^1.0.30001449:
   version "1.0.30001467"
@@ -982,10 +999,51 @@ date-arithmetic@^4.1.0:
   resolved "https://registry.npmjs.org/date-arithmetic/-/date-arithmetic-4.1.0.tgz"
   integrity sha512-QWxYLR5P/6GStZcdem+V1xoto6DMadYWpMXU82ES3/RfR3Wdwr3D0+be7mgOJ+Ov0G9D5Dmb9T17sNLQYj9XOg==
 
+date-bengali-revised@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/date-bengali-revised/-/date-bengali-revised-2.0.2.tgz"
+  integrity sha512-q9iDru4+TSA9k4zfm0CFHJj6nBsxP7AYgWC/qodK/i7oOIlj5K2z5IcQDtESfs/Qwqt/xJYaP86tkazd/vRptg==
+
+date-chinese@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.npmjs.org/date-chinese/-/date-chinese-2.1.4.tgz"
+  integrity sha512-WY+6+Qw92ZGWFvGtStmNQHEYpNa87b8IAQ5T8VKt4wqrn24lBXyyBnWI5jAIyy7h/KVwJZ06bD8l/b7yss82Ww==
+  dependencies:
+    astronomia "^4.1.0"
+
+date-easter@^1.0.2:
+  version "1.0.3"
+  resolved "https://registry.npmjs.org/date-easter/-/date-easter-1.0.3.tgz"
+  integrity sha512-aOViyIgpM4W0OWUiLqivznwTtuMlD/rdUWhc5IatYnplhPiWrLv75cnifaKYhmQwUBLAMWLNG4/9mlLIbXoGBQ==
+
 date-fns@^3.3.1:
   version "3.6.0"
   resolved "https://registry.npmjs.org/date-fns/-/date-fns-3.6.0.tgz"
   integrity sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==
+
+date-holidays-parser@^3.4.4:
+  version "3.4.4"
+  resolved "https://registry.npmjs.org/date-holidays-parser/-/date-holidays-parser-3.4.4.tgz"
+  integrity sha512-R5aO4oT8H51ZKdvApqHrqYEiNBrqT6tRj2PFXNcZfqMI4nxY7KKKly0ZsmquR5gY+x9ldKR8SAMdozzIInaoXg==
+  dependencies:
+    astronomia "^4.1.1"
+    caldate "^2.0.5"
+    date-bengali-revised "^2.0.2"
+    date-chinese "^2.1.4"
+    date-easter "^1.0.2"
+    deepmerge "^4.3.1"
+    jalaali-js "^1.2.6"
+    moment-timezone "^0.5.43"
+
+date-holidays@^3.23.12:
+  version "3.23.12"
+  resolved "https://registry.npmjs.org/date-holidays/-/date-holidays-3.23.12.tgz"
+  integrity sha512-DLyP0PPVgNydgaTAY7SBS26+5h3KO1Z8FRKiAROkz0hAGNBLGAM48SMabfVa2ACRHH7Qw3LXYvlJkt9oa9WePA==
+  dependencies:
+    date-holidays-parser "^3.4.4"
+    js-yaml "^4.1.0"
+    lodash "^4.17.21"
+    prepin "^1.0.3"
 
 dayjs@^1.11.7:
   version "1.11.7"
@@ -998,6 +1056,11 @@ debug@^4.1.0:
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
   dependencies:
     ms "2.1.2"
+
+deepmerge@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz"
+  integrity sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==
 
 dequal@^2.0.2, dequal@^2.0.3:
   version "2.0.3"
@@ -1171,10 +1234,22 @@ is-fullwidth-code-point@^3.0.0:
   resolved "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz"
   integrity sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==
 
+jalaali-js@^1.2.6:
+  version "1.2.7"
+  resolved "https://registry.npmjs.org/jalaali-js/-/jalaali-js-1.2.7.tgz"
+  integrity sha512-gE+YHWSbygYAoJa+Xg8LWxGILqFOxZSBQQw39ghel01fVFUxV7bjL0x1JFsHcLQ3uPjvn81HQMa+kxwyPWnxGQ==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
+
+js-yaml@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.0.tgz"
+  integrity sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==
+  dependencies:
+    argparse "^2.0.1"
 
 jsesc@^2.5.1:
   version "2.5.2"
@@ -1237,7 +1312,7 @@ memoize-one@^6.0.0:
   resolved "https://registry.npmjs.org/memoize-one/-/memoize-one-6.0.0.tgz"
   integrity sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==
 
-moment-timezone@^0.5.40, moment-timezone@^0.5.45:
+moment-timezone@^0.5.40, moment-timezone@^0.5.43, moment-timezone@^0.5.45:
   version "0.5.45"
   resolved "https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.5.45.tgz"
   integrity sha512-HIWmqA86KcmCAhnMAN0wuDOARV/525R2+lOLotuGFzn4HO+FH+/645z2wx0Dt3iDv6/p61SIvKnDstISainhLQ==
@@ -1287,6 +1362,11 @@ postcss@^8.4.21:
     nanoid "^3.3.4"
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
+
+prepin@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.npmjs.org/prepin/-/prepin-1.0.3.tgz"
+  integrity sha512-0XL2hreherEEvUy0fiaGEfN/ioXFV+JpImqIzQjxk6iBg4jQ2ARKqvC4+BmRD8w/pnpD+lbxvh0Ub+z7yBEjvA==
 
 prop-types-extra@^1.1.0:
   version "1.1.1"
