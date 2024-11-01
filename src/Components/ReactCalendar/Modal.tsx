@@ -56,46 +56,57 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <div className="modal" onClick={resetForm}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3>{editEventId ? "Edit Event" : "Add New Event"}</h3>
-        <label>Title:</label>
+        <h3 className="modal-title">
+          {editEventId ? "Edit Event" : "Add New Event"}
+        </h3>
+
+        <label className="modal-label">Title:</label>
         <input
+          className="modal-input"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <label>Start Date:</label>
+        {error && <p className="error-text">{error}</p>}
+
+        <label className="modal-label">Start Date:</label>
         <DatePicker
+          className="modal-input"
           selected={startDate || new Date()}
           onChange={(date) => setStartDate(date)}
           dateFormat="yyyy/MM/dd"
           placeholderText="Select start date"
         />
-        <label>Start Time (24h format):</label>
+
+        <label className="modal-label">Start Time (24h format):</label>
         <input
+          className="modal-input"
           type="time"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
           required
         />
 
-        <label>End Date:</label>
+        <label className="modal-label">End Date:</label>
         <DatePicker
+          className="modal-input"
           selected={endDate}
           onChange={(date) => setEndDate(date)}
           dateFormat="yyyy/MM/dd"
           placeholderText="Select end date"
         />
-        <label>End Time (24h format):</label>
+
+        <label className="modal-label">End Time (24h format):</label>
         <input
+          className="modal-input"
           type="time"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
           required
         />
 
-        <label>Color:</label>
+        <label className="modal-label">Color:</label>
         <div className="color-picker">
           {[
             "#FF0000",
@@ -122,17 +133,20 @@ const Modal: React.FC<ModalProps> = ({
           ))}
         </div>
 
-        <div>
-          <label>
+        <div className="modal-reminder">
+          <label className="modal-reminder__reminder">
+            Set Reminder
             <input
               type="checkbox"
               checked={isReminder}
               onChange={() => setIsReminder(!isReminder)}
+              className="custom-checkbox"
             />
-            Set Reminder
+            <span className="custom-checkbox__box"></span>
           </label>
+
           {isReminder && (
-            <div>
+            <div className="modal-reminder__days">
               <label>Reminder Days Before:</label>
               <input
                 type="number"
@@ -146,18 +160,17 @@ const Modal: React.FC<ModalProps> = ({
         </div>
 
         <div className="modal-buttons">
-          <button onClick={handleSave}>
+          <button className="btn-save" onClick={handleSave}>
             {editEventId ? "Update" : "Save"}
           </button>
           {editEventId && (
-            <button
-              onClick={handleDeleteEvent}
-              style={{ backgroundColor: "red", color: "white" }}
-            >
+            <button className="btn-delete" onClick={handleDeleteEvent}>
               Delete
             </button>
           )}
-          <button onClick={resetForm}>Cancel</button>
+          <button className="btn-cancel" onClick={resetForm}>
+            Cancel
+          </button>
         </div>
       </div>
     </div>

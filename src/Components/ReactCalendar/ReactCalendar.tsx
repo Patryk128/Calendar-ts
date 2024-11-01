@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import Calendar from "../Calendar"; // Assuming you have this imported correctly
+import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import Calendar from "../Calendar";
 import {
   collection,
   addDoc,
@@ -7,61 +8,66 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
-import { db } from "../../firebaseConfig.js"; // Firebase config import
-import Modal from "./Modal"; // Import the Modal component
+import { db } from "../../firebaseConfig.js";
+import Modal from "./Modal";
 import "./Modal.css";
-import Holidays from "date-holidays"; // Importing the library
+import Holidays from "date-holidays";
+import "./calendar.css";
 
 export default function ReactCalendar() {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true); // New loading state
   const [title, setTitle] = useState("");
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
-  const [endDate, setEndDate] = useState<Date | null>(new Date());
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [color, setColor] = useState("#FF0000");
   const [startTime, setStartTime] = useState("12:00");
   const [endTime, setEndTime] = useState("13:00");
   const [isReminder, setIsReminder] = useState(false);
   const [reminderDays, setReminderDays] = useState(1);
-  const [error, setError] = useState<string | null>(null);
-  const [editEventId, setEditEventId] = useState<string | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState("PL"); // Default to Poland
-  const [selectedSlot, setSelectedSlot] = useState<{
-    start: Date;
-    end: Date;
-  } | null>(null);
-  const [notificationsQueue, setNotificationsQueue] = useState<
-    { id: string; message: string }[]
-  >([]);
-
-  const [activeNotification, setActiveNotification] = useState<{
-    id: string;
-    message: string;
-  } | null>(null);
-
+  const [error, setError] = useState(null);
+  const [editEventId, setEditEventId] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState("PL");
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [notificationsQueue, setNotificationsQueue] = useState([]);
+  const [activeNotification, setActiveNotification] = useState(null);
+  const [user, setUser] = useState(null); // New state for authenticated user
+  const auth = getAuth(); // Initialize Firebase Auth
   const notificationInProgress = useRef(false);
 
-  const fetchHolidays = (countryCode: string) => {
-    const hd = new Holidays(countryCode); // Set the country code dynamically
+  const fetchHolidays = (countryCode) => {
+    const hd = new Holidays(countryCode);
     const currentYear = new Date().getFullYear();
-    const holidays = hd.getHolidays(currentYear);
+    const allHolidays = [];
 
-    // Convert holidays to a format suitable for the calendar
-    const holidayEvents = holidays.map((holiday) => ({
-      title: holiday.name,
-      start: new Date(holiday.date),
-      end: new Date(holiday.date),
-      color: "#00FF00", // Set color for holidays
-    }));
+    for (let year = currentYear; year <= currentYear + 1; year++) {
+      const holidays = hd.getHolidays(year);
+      allHolidays.push(
+        ...holidays.map((holiday) => ({
+          title: holiday.name,
+          start: new Date(holiday.date),
+          end: new Date(holiday.date),
+          color: "#00FF00",
+        }))
+      );
+    }
 
-    return holidayEvents;
+    return allHolidays;
   };
 
-  // Fetch events from Firestore
   const fetchEvents = async () => {
+    if (!user) return;
+
     try {
-      const querySnapshot = await getDocs(collection(db, "events"));
+      const q = query(
+        collection(db, "events"),
+        where("userId", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
       const fetchedEvents = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -74,14 +80,52 @@ export default function ReactCalendar() {
           reminderDays: data.reminderDays || 1,
         };
       });
-      const holidayEvents = fetchHolidays(selectedCountry); // Fetch holidays based on selected country
-      setEvents([...fetchedEvents, ...holidayEvents]); // Add holidays to events
+
+      // Fetch holidays and add them to the events list
+      const holidayEvents = fetchHolidays(selectedCountry);
+      setEvents([...fetchedEvents, ...holidayEvents]);
     } catch (error) {
       console.error("Error fetching events: ", error);
     }
   };
 
-  // Fetch events and holidays when the component mounts and when the country changes
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  useEffect(() => {
+    if (user && !loading) {
+      fetchEvents(); // Pobierz wydarzenia tylko, gdy użytkownik jest zalogowany i załadowany
+    }
+  }, [user, loading, selectedCountry]);
+
+  const handleSignIn = async () => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        "user@example.com",
+        "password"
+      );
+      setUser(userCredential.user);
+    } catch (error) {
+      console.error("Error signing in: ", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setEvents([]); // Clear events on sign-out
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
   }, [selectedCountry]);
@@ -98,10 +142,6 @@ export default function ReactCalendar() {
     setReminderDays(1);
     setError(null);
     setEditEventId(null);
-  };
-
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCountry(e.target.value); // Update selected country
   };
 
   const combineDateAndTime = (date: Date | null, time: string): Date | null => {
@@ -135,6 +175,7 @@ export default function ReactCalendar() {
         color,
         isReminder,
         reminderDays,
+        userId: user.uid, // Dodanie ID użytkownika do wydarzenia
       };
 
       try {
@@ -170,16 +211,16 @@ export default function ReactCalendar() {
     }
   };
 
-  const handleEventClick = (event: any) => {
-    console.log("Clicked event:", event); // Log event clicks for debugging
-    setTitle(event.title);
-    setStartDate(new Date(event.start)); // Convert start to Date
-    setEndDate(new Date(event.end)); // Convert end to Date
-    setEditEventId(event.id);
-    setIsModalOpen(true); // Open modal
-    setIsReminder(event.isReminder || false);
-    setReminderDays(event.reminderDays || 1);
-  };
+  // const handleEventClick = (event: any) => {
+  //   console.log("Clicked event:", event);
+  //   setTitle(event.title);
+  //   setStartDate(new Date(event.start));
+  //   setEndDate(new Date(event.end));
+  //   setEditEventId(event.id);
+  //   setIsModalOpen(true);
+  //   setIsReminder(event.isReminder || false);
+  //   setReminderDays(event.reminderDays || 1);
+  // };
 
   useEffect(() => {
     const checkForUpcomingEvents = () => {
@@ -203,9 +244,8 @@ export default function ReactCalendar() {
       });
     };
 
-    // Run reminder checking on app start
     checkForUpcomingEvents();
-  }, [events]); // Runs again when `events` is fetched
+  }, [events]);
 
   const addNotificationToQueue = (message: string) => {
     const newNotification = {
@@ -230,11 +270,10 @@ export default function ReactCalendar() {
     );
     notificationInProgress.current = false;
 
-    // Check if there's more notifications in the queue after closing the current one
     if (notificationsQueue.length > 1) {
-      const nextNotification = notificationsQueue[1]; // Get the next notification
+      const nextNotification = notificationsQueue[1];
       setActiveNotification(nextNotification);
-      notificationInProgress.current = true; // Set flag to avoid simultaneous display
+      notificationInProgress.current = true;
     }
   };
 
@@ -247,9 +286,9 @@ export default function ReactCalendar() {
     setEndDate(end);
     setStartTime("12:00");
     setEndTime("13:00");
-    setIsModalOpen(true); // Open modal
-    setIsReminder(false); // Reset reminder
-    setReminderDays(1); // Reset reminder days
+    setIsModalOpen(true);
+    setIsReminder(false);
+    setReminderDays(1);
   };
 
   const addNotification = (message: string) => {
@@ -257,7 +296,7 @@ export default function ReactCalendar() {
       id: `${Date.now()}`,
       message,
     };
-    console.log("Adding notification:", newNotification.message); // Check if notification is triggered
+    console.log("Adding notification:", newNotification.message);
     setNotificationsQueue((prevQueue) => [...prevQueue, newNotification]);
   };
 
@@ -271,13 +310,12 @@ export default function ReactCalendar() {
     onClose: (id: string) => void;
   }) {
     useEffect(() => {
-      // Auto-close notification after 5 seconds
       const timer = setTimeout(() => onClose(id), 2000);
-      return () => clearTimeout(timer); // Cleanup timer
+      return () => clearTimeout(timer);
     }, [id, onClose]);
 
     return (
-      <div className="notification">
+      <div className="reminder-notification">
         <span>{message}</span>
         <button onClick={() => onClose(id)}>&times;</button>
       </div>
@@ -285,19 +323,26 @@ export default function ReactCalendar() {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: "20px" }}>
-        <label htmlFor="holiday-country">Select Holiday Country: </label>
-        <select
-          id="holiday-country"
-          value={selectedCountry}
-          onChange={handleCountryChange}
-        >
-          <option value="PL">Poland</option>
-          <option value="US">USA</option>
-          <option value="GB">UK</option>
-        </select>
+    <div className="calendar-container">
+      <div className="header-controls">
+        <div className="country-select-container">
+          <label htmlFor="holiday-country">Select Holiday Country: </label>
+          <select
+            id="holiday-country"
+            className="country-select"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            <option value="PL">Poland</option>
+            <option value="US">USA</option>
+            <option value="GB">UK</option>
+          </select>
+        </div>
+        <button className="sign-out-button" onClick={handleSignOut}>
+          Sign Out
+        </button>
       </div>
+
       <div style={{ height: "100vh" }}>
         <Calendar
           events={events.map((event) => ({
@@ -307,15 +352,34 @@ export default function ReactCalendar() {
             title: event.title,
             color: event.color,
           }))}
-          onSelectEvent={handleEventClick}
-          onSelectSlot={handleSelectSlot}
+          onSelectEvent={(event) => {
+            setTitle(event.title);
+            setStartDate(new Date(event.start));
+            setEndDate(new Date(event.end));
+            setEditEventId(event.id);
+            setIsModalOpen(true);
+            setIsReminder(event.isReminder || false);
+            setReminderDays(event.reminderDays || 1);
+          }}
+          onSelectSlot={({ start, end }) => {
+            setSelectedSlot({ start, end });
+            setTitle("");
+            setEditEventId(null);
+            setError(null);
+            setStartDate(start);
+            setEndDate(end);
+            setStartTime("12:00");
+            setEndTime("13:00");
+            setIsModalOpen(true);
+            setIsReminder(false);
+            setReminderDays(1);
+          }}
           selectable
           eventPropGetter={(event) => ({
             style: { backgroundColor: event.color },
           })}
         />
       </div>
-
       <Modal
         isOpen={isModalOpen}
         title={title}

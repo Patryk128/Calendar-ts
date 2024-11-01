@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../src/firebaseConfig.js";
+import { auth } from "./firebaseConfig";
 import ReactCalendar from "../src/Components/ReactCalendar/ReactCalendar.js";
-import Login from "./Login.tsx";
-import Register from "./Register.tsx";
+import Login from "./Login";
+import Register from "./Register";
+import "./Components/ReactCalendar/reset.css";
 
 export default function App() {
-  const [user, setUser] = useState<any>(null); // Przechowywanie stanu zalogowanego użytkownika
-  const [showRegister, setShowRegister] = useState(false); // Dodany stan do przełączania widoku
+  const [user, setUser] = useState<any>(null);
+  const [showRegister, setShowRegister] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -17,35 +18,22 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    setUser(null);
-  };
-
   const toggleView = () => {
-    setShowRegister(!showRegister); // Zmiana stanu widoku
+    setShowRegister(!showRegister);
   };
 
   return (
-    <div style={{ height: "95vh" }}>
+    <div>
       {user ? (
         <>
-          <button onClick={handleLogout}>Logout</button>
           <ReactCalendar />
         </>
       ) : (
         <>
-          <h1>Welcome! Please log in or register.</h1>
           {showRegister ? (
-            <>
-              <Register />
-              <button onClick={toggleView}>Back to Login</button>
-            </>
+            <Register toggleView={toggleView} />
           ) : (
-            <>
-              <Login />
-              <button onClick={toggleView}>Go to Register</button>
-            </>
+            <Login toggleView={toggleView} />
           )}
         </>
       )}
