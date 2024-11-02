@@ -74,7 +74,7 @@ const Modal: React.FC<ModalProps> = ({
         <DatePicker
           className="modal-input"
           selected={startDate || new Date()}
-          onChange={(date) => setStartDate(date)}
+          onChange={(date: Date | null) => setStartDate(date)}
           dateFormat="yyyy/MM/dd"
           placeholderText="Select start date"
         />
@@ -92,7 +92,7 @@ const Modal: React.FC<ModalProps> = ({
         <DatePicker
           className="modal-input"
           selected={endDate}
-          onChange={(date) => setEndDate(date)}
+          onChange={(date: Date | null) => setEndDate(date)}
           dateFormat="yyyy/MM/dd"
           placeholderText="Select end date"
         />

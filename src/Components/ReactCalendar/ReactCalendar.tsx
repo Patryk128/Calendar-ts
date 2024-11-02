@@ -41,7 +41,7 @@ export default function ReactCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [color, setColor] = useState("#FF0000");
@@ -50,10 +50,15 @@ export default function ReactCalendar() {
   const [isReminder, setIsReminder] = useState(false);
   const [reminderDays, setReminderDays] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [editEventId, setEditEventId] = useState(null);
+  const [editEventId, setEditEventId] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("PL");
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [notificationsQueue, setNotificationsQueue] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
+  const [notificationsQueue, setNotificationsQueue] = useState<Notification[]>(
+    []
+  );
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -170,11 +175,19 @@ export default function ReactCalendar() {
     const combinedStartDate = combineDateAndTime(startDate, startTime);
     const combinedEndDate = combineDateAndTime(endDate, endTime);
 
+    // Sprawdzamy, czy daty są poprawnie połączone i czy start jest przed end
     if (
       combinedStartDate &&
       combinedEndDate &&
       combinedStartDate <= combinedEndDate
     ) {
+      // Sprawdzenie, czy `user` istnieje
+      if (!user) {
+        console.error("User is null. Cannot create an event without userId.");
+        setError("Unable to create event. User information is missing.");
+        return;
+      }
+
       const newEvent = {
         title,
         start: combinedStartDate,
@@ -196,10 +209,12 @@ export default function ReactCalendar() {
           console.log("Event added successfully!");
           addNotification("Event added successfully!");
         }
+
         fetchEvents();
         resetForm();
       } catch (error) {
         console.error("Error saving event: ", error);
+        setError("Failed to save the event. Please try again.");
       }
     } else {
       setError("Start date/time must be before end date/time.");
@@ -217,6 +232,7 @@ export default function ReactCalendar() {
       console.error("Error deleting event: ", error);
     }
   };
+
   useEffect(() => {
     const checkForUpcomingEvents = () => {
       const now = new Date();
@@ -224,8 +240,9 @@ export default function ReactCalendar() {
       events.forEach((event) => {
         if (event.isReminder) {
           const eventStartDate = new Date(event.start);
+          const reminderDays = event.reminderDays ?? 0;
           const reminderDate = new Date(eventStartDate);
-          reminderDate.setDate(reminderDate.getDate() - event.reminderDays);
+          reminderDate.setDate(reminderDate.getDate() - reminderDays);
 
           if (reminderDate <= now && now < eventStartDate) {
             const daysUntilEvent = Math.ceil(
@@ -270,20 +287,6 @@ export default function ReactCalendar() {
       setActiveNotification(nextNotification);
       notificationInProgress.current = true;
     }
-  };
-
-  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
-    setSelectedSlot({ start, end });
-    setTitle("");
-    setEditEventId(null);
-    setError(null);
-    setStartDate(start);
-    setEndDate(end);
-    setStartTime("12:00");
-    setEndTime("13:00");
-    setIsModalOpen(true);
-    setIsReminder(false);
-    setReminderDays(1);
   };
 
   const addNotification = (message: string) => {
@@ -347,11 +350,11 @@ export default function ReactCalendar() {
             title: event.title,
             color: event.color,
           }))}
-          onSelectEvent={(event) => {
+          onSelectEvent={(event: Event) => {
             setTitle(event.title);
             setStartDate(new Date(event.start));
             setEndDate(new Date(event.end));
-            setEditEventId(event.id);
+            setEditEventId(event.id || "");
             setIsModalOpen(true);
             setIsReminder(event.isReminder || false);
             setReminderDays(event.reminderDays || 1);
