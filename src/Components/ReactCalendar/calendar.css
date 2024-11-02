@@ -68,7 +68,6 @@
   background-color: #45a049;
 }
 
-/* Główna kontener kalendarza */
 .calendar-container {
   height: 100vh;
   overflow: auto;
@@ -78,7 +77,6 @@
   flex-direction: column;
 }
 
-/* Pasek narzędzi */
 .rbc-toolbar {
   background-color: #333;
   color: white;
@@ -89,7 +87,6 @@
   justify-content: space-between;
 }
 
-/* Styl przycisków w toolbarze */
 .rbc-btn-group button {
   background-color: #555;
   color: #fff;
@@ -104,12 +101,10 @@
   background-color: #666;
 }
 
-/* Pojedynczy dzień kalendarza */
 .rbc-day-bg {
   border: 1px solid #e0e0e0;
 }
 
-/* Styl przycisków wylogowania i wyboru kraju */
 .sign-out-button {
   background-color: #4caf50;
   color: white;
@@ -131,29 +126,14 @@
   font-size: 14px;
 }
 
-/* Wiersz miesięcy */
 .rbc-month-row {
   border-top: 1px solid #ddd;
 }
 
-/* Tło dni roboczych w widoku miesięcznym */
-/* .rbc-month-row .rbc-day-bg {
-  background-color: #f9f9f9;
-} */
-
-/* Styl weekendów */
-/* .rbc-month-row .rbc-day-bg:nth-child(7n)
-.rbc-month-row .rbc-day-bg:nth-child(7n-1)  {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-/* Styl wybranych dni */
 .rbc-selected-cell {
   background-color: #d0e9ff;
 }
 
-/* Dni miesiąca w wierszu */
 .rbc-month-row .rbc-date-cell {
   font-weight: bold;
   font-size: 14px;
@@ -161,25 +141,20 @@
   color: #444;
 }
 
-/* Obecny dzień */
 .rbc-month-row .rbc-now {
-  /* background-color: #ffeb3b; */
   font-weight: bold;
   color: #000;
 }
 .rbc-day-bg.rbc-now {
-  /* background-color: #ffeb3b; */
   font-weight: bold;
   color: #000;
 }
-/* Święta w widoku miesięcznym */
 .rbc-month-row .holiday {
   background-color: #f44336 !important;
   color: #fff;
   font-weight: bold;
 }
 
-/* Wydarzenia */
 .rbc-month-row .rbc-event {
   background-color: #ff7f50;
   color: white;
@@ -188,31 +163,26 @@
   font-size: 12px;
 }
 
-/* Poziom kompresji, jeśli wiele wydarzeń jest w jednym dniu */
 .rbc-show-more {
   color: #0073e6;
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
 }
-/* Dni z poprzedniego miesiąca */
 .rbc-off-range-bg {
-  background-color: #83758d; /* Jasnofioletowe tło dla dni z poprzedniego miesiąca */
-  color: #8a2be2; /* Kolor tekstu */
+  background-color: #83758d;
+  color: #8a2be2;
 }
 
-/* Dni z następnego miesiąca */
 .rbc-month-row:last-child .rbc-off-range-bg {
-  background-color: #d0f0fd; /* Jasnoniebieskie tło dla dni z przyszłego miesiąca */
-  color: #1e90ff; /* Kolor tekstu */
+  background-color: #d0f0fd;
+  color: #1e90ff;
 }
 
-/* Ogólny styl dla dni spoza zakresu (jeśli nie obejmuje wyłącznie kolorowania tła) */
 .rbc-off-range .rbc-date-cell {
   font-weight: normal;
 }
 
-/* Opcjonalne stylowanie wydarzeń spoza bieżącego miesiąca */
 .rbc-off-range .rbc-event {
   opacity: 0.6;
   background-color: #ccc;

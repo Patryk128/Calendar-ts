@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import Calendar from "../Calendar";
+import { useState, useEffect, useRef } from "react";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  User,
+} from "firebase/auth";
+import Calendar from "../Calendar.js";
 import {
   collection,
   addDoc,
@@ -12,34 +17,50 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../firebaseConfig.js";
-import Modal from "./Modal";
+import Modal from "./Modal.js";
 import "./Modal.css";
 import Holidays from "date-holidays";
 import "./calendar.css";
 
+interface Event {
+  id?: string;
+  title: string;
+  start: Date;
+  end: Date;
+  color: string;
+  isReminder?: boolean;
+  reminderDays?: number;
+}
+
+interface Notification {
+  id: string;
+  message: string;
+}
+
 export default function ReactCalendar() {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true); // New loading state
+  const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [color, setColor] = useState("#FF0000");
   const [startTime, setStartTime] = useState("12:00");
   const [endTime, setEndTime] = useState("13:00");
   const [isReminder, setIsReminder] = useState(false);
   const [reminderDays, setReminderDays] = useState(1);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [editEventId, setEditEventId] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState("PL");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [notificationsQueue, setNotificationsQueue] = useState([]);
-  const [activeNotification, setActiveNotification] = useState(null);
-  const [user, setUser] = useState(null); // New state for authenticated user
-  const auth = getAuth(); // Initialize Firebase Auth
+  const [activeNotification, setActiveNotification] =
+    useState<Notification | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const auth = getAuth();
   const notificationInProgress = useRef(false);
 
-  const fetchHolidays = (countryCode) => {
+  const fetchHolidays = (countryCode: string) => {
     const hd = new Holidays(countryCode);
     const currentYear = new Date().getFullYear();
     const allHolidays = [];
@@ -81,7 +102,6 @@ export default function ReactCalendar() {
         };
       });
 
-      // Fetch holidays and add them to the events list
       const holidayEvents = fetchHolidays(selectedCountry);
       setEvents([...fetchedEvents, ...holidayEvents]);
     } catch (error) {
@@ -99,28 +119,15 @@ export default function ReactCalendar() {
 
   useEffect(() => {
     if (user && !loading) {
-      fetchEvents(); // Pobierz wydarzenia tylko, gdy użytkownik jest zalogowany i załadowany
+      fetchEvents();
     }
   }, [user, loading, selectedCountry]);
-
-  const handleSignIn = async () => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        "user@example.com",
-        "password"
-      );
-      setUser(userCredential.user);
-    } catch (error) {
-      console.error("Error signing in: ", error);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
       setUser(null);
-      setEvents([]); // Clear events on sign-out
+      setEvents([]);
     } catch (error) {
       console.error("Error signing out: ", error);
     }
@@ -175,7 +182,7 @@ export default function ReactCalendar() {
         color,
         isReminder,
         reminderDays,
-        userId: user.uid, // Dodanie ID użytkownika do wydarzenia
+        userId: user.uid,
       };
 
       try {
@@ -210,18 +217,6 @@ export default function ReactCalendar() {
       console.error("Error deleting event: ", error);
     }
   };
-
-  // const handleEventClick = (event: any) => {
-  //   console.log("Clicked event:", event);
-  //   setTitle(event.title);
-  //   setStartDate(new Date(event.start));
-  //   setEndDate(new Date(event.end));
-  //   setEditEventId(event.id);
-  //   setIsModalOpen(true);
-  //   setIsReminder(event.isReminder || false);
-  //   setReminderDays(event.reminderDays || 1);
-  // };
-
   useEffect(() => {
     const checkForUpcomingEvents = () => {
       const now = new Date();

@@ -1,1 +1,1 @@
-export { default as ReactCalendar } from "./ReactCalendar/ReactCalendar";
+export { default as ReactCalendar } from "./ReactCalendar/ReactCalendar.js";

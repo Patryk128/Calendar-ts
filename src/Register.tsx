@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "./firebaseConfig";
+import { auth } from "./firebaseConfig.js";
 import "./Components/ReactCalendar/register.css";
 
 interface RegisterProps {
