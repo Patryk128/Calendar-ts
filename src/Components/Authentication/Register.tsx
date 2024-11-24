@@ -1,62 +1,64 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebaseConfig.js";
-import "./Components/ReactCalendar/login.css";
+import "../ReactCalendar/styles/register.css";
 
-interface LoginProps {
+interface RegisterProps {
   toggleView: () => void;
 }
 
-export default function Login({ toggleView }: LoginProps) {
+export default function Register({ toggleView }: RegisterProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
     setPasswordError("");
 
     let isValid = true;
-
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
       setEmailError("Invalid email address.");
       isValid = false;
     }
-    if (password.length === 0) {
-      setPasswordError("Password is required.");
+
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
       isValid = false;
     }
 
     if (!isValid) return;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in");
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log("User registered:", userCredential.user);
     } catch (err: any) {
-      if (err.code === "auth/invalid-email") {
-        setEmailError("Invalid email address.");
-      } else if (err.code === "auth/wrong-password") {
-        setPasswordError("Incorrect password.");
+      if (err.code === "auth/email-already-in-use") {
+        setEmailError("This email is already in use.");
       } else {
-        setPasswordError("Login failed. Please try again.");
+        setPasswordError("Registration failed. Please try again.");
       }
     }
   };
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      <form className="login-form" onSubmit={handleLogin} noValidate>
+    <div className="register-container">
+      <h2>Register</h2>
+      <form className="register-form" onSubmit={handleRegister} noValidate>
         <div>
           <label>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleLogin(e)}
+            onKeyPress={(e) => e.key === "Enter" && handleRegister(e)}
           />
           {emailError && (
             <p className="error-message" style={{ color: "red" }}>
@@ -70,7 +72,7 @@ export default function Login({ toggleView }: LoginProps) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleLogin(e)}
+            onKeyPress={(e) => e.key === "Enter" && handleRegister(e)}
           />
           {passwordError && (
             <p className="error-message" style={{ color: "red" }}>
@@ -79,11 +81,11 @@ export default function Login({ toggleView }: LoginProps) {
           )}
         </div>
         <div className="auth-buttons">
-          <button className="login-register-button" onClick={toggleView}>
-            Go to Register
+          <button className="register-login-button" onClick={toggleView}>
+            Back to Login
           </button>
-          <button className="login-button" type="submit">
-            Login
+          <button className="register-button" type="submit">
+            Register
           </button>
         </div>
       </form>

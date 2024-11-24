@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "./firebaseConfig.js";
-import ReactCalendar from "../src/Components/ReactCalendar/ReactCalendar.js";
-import Login from "./Login.js";
-import Register from "./Register.js";
-import "./Components/ReactCalendar/reset.css";
+import { auth } from "../Authentication/firebaseConfig.js";
+import ReactCalendar from "../ReactCalendar/ReactCalendar.js";
+import Login from "../Authentication/Login.js";
+import Register from "../Authentication/Register.js";
+import "../ReactCalendar/styles/reset.css";
 
 export default function App() {
   const [user, setUser] = useState<any>(null);

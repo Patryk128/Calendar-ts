@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  User,
-} from "firebase/auth";
-import Calendar from "../Calendar.js";
+import { getAuth, signOut, User } from "firebase/auth";
+import Calendar from "./Calendar.js";
 import {
   collection,
   addDoc,
@@ -16,11 +11,11 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../../firebaseConfig.js";
+import { db } from "../Authentication/firebaseConfig.js";
 import Modal from "./Modal.js";
-import "./Modal.css";
+import "./styles/Modal.css";
 import Holidays from "date-holidays";
-import "./calendar.css";
+import "./styles/calendar.css";
 
 interface Event {
   id?: string;
