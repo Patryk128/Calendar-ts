@@ -1,24 +1,67 @@
+/* --- Kontener Autentykacji --- */
 .auth-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background-color: #f4f6f8;
+  min-height: 100vh; /* Utrzymuje pełną wysokość ekranu */
+  background-color: var(--background-color); /* Użycie zmiennej dla tła */
+  padding: 1rem; /* Dodaje trochę przestrzeni, aby wewnętrzne elementy nie przylegały do krawędzi na małych ekranach */
 }
 
+/* Opcjonalnie: możesz dodać kontener dla samego formularza wewnątrz .auth-container,
+   aby nadać mu tło, cień i zaokrąglenia, jeśli tego potrzebujesz. Np.: */
+.auth-form-wrapper {
+  background-color: var(--surface-color);
+  padding: 2rem 2.5rem;
+  border-radius: var(
+    --border-radius-lg,
+    0.5rem
+  ); /* Użyj --border-radius-lg, jeśli zdefiniowano, inaczej 0.5rem */
+  box-shadow: var(
+    --box-shadow-lg,
+    0 0.5rem 1rem rgba(0, 0, 0, 0.15)
+  ); /* Użyj --box-shadow-lg, jeśli zdefiniowano */
+  width: 100%;
+  max-width: 420px; /* Przykładowa maksymalna szerokość dla formularza */
+  text-align: center; /* Wyśrodkowanie tekstu i przycisków wewnątrz, jeśli potrzebne */
+}
+
+/* --- Przycisk Przełączający (Toggle Button) --- */
 .toggle-button {
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
+  margin-top: 1.5rem; /* Zwiększony margines dla lepszego odstępu */
+  padding: 0.75rem 1.5rem; /* Zwiększony padding dla lepszej klikalności */
   border: none;
-  border-radius: 4px;
-  background-color: #0073e6;
-  color: white;
-  font-size: 1rem;
+  border-radius: var(--border-radius); /* Użycie zmiennej dla spójności */
+  background-color: var(--primary-color); /* Użycie zmiennej dla koloru tła */
+  color: var(--text-color-inverse); /* Użycie zmiennej dla koloru tekstu */
+  font-size: var(--font-size-base); /* Użycie zmiennej dla rozmiaru czcionki */
+  font-weight: 500; /* Dodanie lekkiego pogrubienia dla lepszej czytelności */
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+    transform 0.1s ease-in-out;
+  text-decoration: none; /* Na wypadek, gdyby był to element <a> stylizowany na przycisk */
+  display: inline-block; /* Dla prawidłowego działania paddingu i marginesu */
 }
 
 .toggle-button:hover {
-  background-color: #005bb5;
+  background-color: var(
+    --primary-color-darken
+  ); /* Użycie zmiennej dla ciemniejszego odcienia */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Delikatny cień przy najechaniu */
+}
+
+.toggle-button:focus {
+  outline: none; /* Usunięcie domyślnego outline */
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.35); /* Dodanie niestandardowego focus ringa */
+  /* Upewnij się, że masz zdefiniowaną zmienną --primary-color-rgb lub dostosuj kolor rgba() */
+  /* Przykład definicji w :root, jeśli --primary-color to #007bff: */
+  /* --primary-color-rgb: 0, 123, 255; */
+}
+
+.toggle-button:active {
+  transform: translateY(
+    1px
+  ); /* Lekkie wciśnięcie przycisku przy aktywnym kliknięciu */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }

@@ -4,104 +4,175 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #f0f4f8;
-  padding: 2rem 1.5rem;
+  background-color: var(--light-bg-subtle, #f0f4f8);
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 1.5); /* 2rem 1.5rem */
+  box-sizing: border-box;
 }
 
 .login-container h2 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 1rem;
+  font-size: var(--font-size-h2, 2rem);
+  color: var(--text-color, #333);
+  margin-bottom: var(--spacing-unit, 1rem);
   text-align: center;
+  font-weight: 600;
 }
 
 .login-form {
   width: 100%;
   max-width: 25rem;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
+  padding: calc(var(--spacing-unit) * 2); /* 2rem */
+  border-radius: var(--border-radius-lg, 0.5rem);
+  box-shadow: var(--box-shadow-lg, 0px 4px 12px rgba(0, 0, 0, 0.1));
+  background-color: var(--surface-color, #ffffff);
 }
 
 .login-form label {
   display: block;
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 0.5rem;
+  font-size: var(--font-size-sm, 0.9rem);
+  color: var(--text-color-muted, #555);
+  margin-bottom: calc(var(--spacing-unit) / 2); /* 0.5rem */
+  font-weight: 500;
 }
 
 .login-form input {
   width: 100%;
-  padding: 0.8rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  font-size: 1rem;
+  padding: var(--input-padding-y, 0.8rem) var(--input-padding-x, 0.8rem);
+  margin-bottom: var(--spacing-unit, 1rem);
+  border: 1px solid var(--input-border-color, #ccc);
+  border-radius: var(--border-radius-sm, 0.25rem);
+  font-size: var(--font-size-base, 1rem);
+  box-sizing: border-box;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
 }
 
 .login-form .error-message {
-  color: #ff4d4f;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  color: var(--danger-color, #ff4d4f);
+  font-size: var(--font-size-sm, 0.9rem);
+  margin-top: calc(-1 * var(--spacing-unit) / 2);
+  margin-bottom: var(--spacing-unit, 1rem);
+  display: block;
 }
 
+/* --- Kontener na przyciski autentykacji --- */
 .auth-buttons {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row; /* Domyślnie w wierszu */
+  justify-content: space-between; /* Rozmieszcza przyciski na końcach */
   align-items: center;
   width: 100%;
+  gap: var(
+    --spacing-unit,
+    1rem
+  ); /* Odstęp między przyciskami, jeśli są obok siebie */
+  margin-top: calc(
+    var(--spacing-unit) * 0.5
+  ); /* Mały odstęp od ostatniego pola formularza */
 }
 
-.login-button {
-  padding: 0.8rem;
+/* --- Style ogólne dla przycisków w .auth-buttons --- */
+.auth-buttons .login-button,
+.auth-buttons .login-register-button {
+  flex-grow: 1; /* Pozwala przyciskom rosnąć i wypełniać przestrzeń, jeśli potrzeba */
+  padding: var(--button-padding-y, 0.8rem) var(--button-padding-x, 0.8rem); /* Dostosuj padding dla mniejszych przycisków obok siebie */
   border: none;
-  border-radius: 0.25rem;
-  background-color: #4caf50;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: bold;
+  border-radius: var(--border-radius-sm, 0.25rem);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+    transform 0.1s ease-in-out;
+  text-align: center;
+}
+
+.auth-buttons .login-button:focus,
+.auth-buttons .login-register-button:focus {
+  outline: none;
+}
+
+.auth-buttons .login-button:active,
+.auth-buttons .login-register-button:active {
+  transform: translateY(1px);
+}
+
+/* Przycisk "Zaloguj" (Główna akcja) */
+.login-button {
+  background-color: var(
+    --primary-color,
+    #4caf50
+  ); /* Jeśli zielony to primary, inaczej np. niebieski */
+  color: var(--text-color-inverse, #fff);
 }
 
 .login-button:hover {
-  background-color: #45a049;
+  background-color: var(--primary-color-darken, #45a049);
+  box-shadow: var(--box-shadow, 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075));
+}
+.login-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 76, 175, 80), 0.35); /* Dostosuj RGB do koloru przycisku */
 }
 
+/* Przycisk "Przejdź do Rejestracji" (Akcja drugorzędna/link) */
 .login-register-button {
-  padding: 0.8rem;
-  border: none;
-  border-radius: 0.25rem;
-  background-color: rgb(224, 224, 89);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  background-color: var(--warning-color, rgb(224, 224, 89));
+  color: var(
+    --text-color-on-warning,
+    #212529
+  ); /* WAŻNE: Ciemny tekst dla kontrastu! */
 }
 
 .login-register-button:hover {
-  filter: brightness(0.85);
+  background-color: var(--warning-color-darken, rgb(204, 204, 69));
+  box-shadow: var(--box-shadow, 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075));
+}
+.login-register-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--warning-color-rgb, 255, 193, 7), 0.35);
 }
 
+/* --- Media Queries --- */
 @media (max-width: 480px) {
+  .login-container {
+    padding: var(--spacing-unit, 1rem) calc(var(--spacing-unit) / 2);
+  }
   .login-container h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 
   .login-form {
-    padding: 1rem;
+    padding: calc(var(--spacing-unit) * 1.5); /* 1.5rem */
+    margin-left: calc(
+      var(--spacing-unit) * 0.5
+    ); /* Mniejsze marginesy na małych ekranach */
+    margin-right: calc(var(--spacing-unit) * 0.5);
   }
 
   .login-form input {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm, 0.9rem);
+    padding: calc(var(--input-padding-y) * 0.9)
+      calc(var(--input-padding-x) * 0.9);
   }
 
-  .login-button,
-  .login-register-button {
-    font-size: 0.9rem;
-    padding: 0.7rem;
-    margin-bottom: 0.5rem;
+  /* Dostosowanie .auth-buttons na małych ekranach */
+  .auth-buttons {
+    flex-direction: column; /* Przyciski jeden pod drugim */
+    gap: calc(
+      var(--spacing-unit) * 0.75
+    ); /* Odstęp między przyciskami w kolumnie */
+  }
+
+  .auth-buttons .login-button,
+  .auth-buttons .login-register-button {
+    width: 100%; /* Przyciski na pełną szerokość w kolumnie */
+    font-size: var(--font-size-sm, 0.9rem);
+    padding: calc(var(--button-padding-y) * 0.9)
+      calc(var(--button-padding-x) * 0.9);
+    /* margin-bottom nie jest już potrzebny, bo gap załatwia odstęp */
   }
 }

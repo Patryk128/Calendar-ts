@@ -1,194 +1,314 @@
+/* --- Kontener główny aplikacji --- */
 .calendar-container {
   height: 100vh;
   overflow: auto;
-  padding: 10px;
+  padding: 1.5rem; /* Zwiększony padding dla lepszego "oddechu" */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  background-color: var(--background-color);
 }
 
-.rbc-calendar {
-  width: 100%;
-  height: auto;
-}
-
-.rbc-event {
-  background-color: var(--event-color, #ff7f50);
-  border-radius: 4px;
-  color: white;
-  padding: 5px;
-  font-weight: bold;
-}
-
-.rbc-toolbar-label {
-  font-size: 36px;
-  font-weight: bold;
-  color: #e0dada;
-}
-
-.modal-content {
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
+/* --- Kontrolki w nagłówku (select kraju, wylogowanie) --- */
 .header-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 1rem; /* Zwiększony odstęp */
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
 }
 
 .country-select-container {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
 .country-select {
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+  padding: 0.5em 0.8em;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.country-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Dopasuj RGB do --primary-color */
 }
 
 .sign-out-button {
-  background-color: #4caf50;
-  color: white;
-  padding: 8px 12px;
+  background-color: var(--secondary-color);
+  color: var(--text-color-inverse);
+  padding: 0.6em 1em;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
 }
 
 .sign-out-button:hover {
-  background-color: #45a049;
+  background-color: var(--secondary-color-darken);
 }
 
-.calendar-container {
-  height: 100vh;
-  overflow: auto;
-  padding: 10px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+/* --- Główny kontener kalendarza --- */
+.rbc-calendar {
+  width: 100%;
+  height: auto; /* Lub flex-grow: 1; jeśli .calendar-container jest rodzicem i ma określoną wysokość */
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-lg);
+  border: 1px solid var(--border-color);
 }
 
+/* --- Pasek narzędzi kalendarza (nawigacja, nazwa miesiąca) --- */
 .rbc-toolbar {
-  background-color: #333;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0; /* Zaokrąglenie górnych rogów */
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 0; /* Usuwamy, jeśli niepotrzebny, lub dostosowujemy */
+}
+
+.rbc-toolbar-label {
+  font-size: 1.75rem; /* Bardziej stonowany rozmiar */
+  font-weight: 600; /* Semi-bold */
+  color: var(--text-color);
 }
 
 .rbc-btn-group button {
-  background-color: #555;
-  color: #fff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
-  margin: 0 2px;
-  transition: background-color 0.3s;
-}
-
-.rbc-btn-group button:hover {
-  background-color: #666;
-}
-
-.rbc-day-bg {
-  border: 1px solid #e0e0e0;
-}
-
-.sign-out-button {
-  background-color: #4caf50;
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
+  background-color: var(--surface-color);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.5em 1em;
+  border-radius: var(--border-radius);
+  margin: 0 0.25rem;
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
   cursor: pointer;
-  transition: background-color 0.3s;
+  font-weight: 500;
 }
 
-.sign-out-button:hover {
-  background-color: #45a049;
+.rbc-btn-group button:hover,
+.rbc-btn-group button:focus {
+  background-color: var(--primary-color);
+  color: var(--text-color-inverse);
+  border-color: var(--primary-color);
+  outline: none;
 }
 
-.country-select {
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+.rbc-btn-group button.rbc-active {
+  /* Aktywny przycisk (np. widok) */
+  background-color: var(--primary-color);
+  color: var(--text-color-inverse);
+  border-color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* --- Nagłówki dni tygodnia --- */
+.rbc-header {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-color-muted);
+  border-bottom: 1px solid var(--border-color);
+  background-color: #f8f9fa; /* Lekkie tło dla odróżnienia */
+}
+
+/* --- Komórki dni --- */
+.rbc-month-view {
+  /* Usuwamy domyślne ramki widoku, jeśli kalendarz ma już swoją */
+  border: none;
 }
 
 .rbc-month-row {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-color);
+}
+.rbc-month-row:first-child {
+  /* Usuwamy górną ramkę pierwszego rzędu, jeśli toolbar ma dolną */
+  border-top: none;
 }
 
+.rbc-day-bg {
+  /* Tło komórki dnia */
+  border-left: 1px solid var(--border-color); /* Linie pionowe między dniami */
+  transition: background-color 0.2s ease;
+}
+.rbc-day-bg:first-child {
+  border-left: none; /* Usuwamy lewą ramkę pierwszej komórki w rzędzie */
+}
+
+.rbc-day-bg:hover:not(.rbc-off-range-bg) {
+  /* Podświetlenie przy najechaniu, ale nie dla dni poza zakresem */
+  background-color: #f1f1f1;
+}
+
+.rbc-date-cell {
+  /* Ogólna komórka daty */
+  padding: 0.5rem;
+  text-align: right; /* Numer dnia w prawym górnym rogu */
+  font-size: var(--font-size-base);
+  color: var(--text-color);
+}
+
+.rbc-date-cell .rbc-date-header {
+  /* Numer dnia */
+  font-size: var(--font-size-sm);
+  display: inline-block; /* Aby padding i border-radius działały poprawnie */
+  padding: 0.2em 0.4em;
+  border-radius: 50%; /* Okrągłe tło dla numeru dnia */
+  min-width: 1.8em; /* Aby wszystkie cyfry miały podobny okrąg */
+  text-align: center;
+}
+
+/* --- Dzisiejszy dzień --- */
+.rbc-today {
+  background-color: var(
+    --today-bg-color
+  ) !important; /* Ważne, aby nadpisać inne tła */
+}
+.rbc-today .rbc-date-header {
+  font-weight: 700;
+  color: var(--primary-color); /* Kolor dla cyfry dzisiejszego dnia */
+  background-color: rgba(0, 123, 255, 0.15); /* Lekkie tło dla numeru */
+}
+
+/* --- Zaznaczona komórka --- */
 .rbc-selected-cell {
-  background-color: #d0e9ff;
+  background-color: var(--selected-cell-bg-color) !important;
 }
 
-.rbc-month-row .rbc-date-cell {
-  font-weight: bold;
-  font-size: 14px;
-  padding: 5px;
-  color: #444;
-}
-
-.rbc-month-row .rbc-now {
-  font-weight: bold;
-  color: #000;
-}
-.rbc-day-bg.rbc-now {
-  font-weight: bold;
-  color: #000;
-}
-.rbc-month-row .holiday {
-  background-color: #f44336 !important;
-  color: #fff;
-  font-weight: bold;
-}
-
-.rbc-month-row .rbc-event {
-  background-color: #ff7f50;
-  color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 12px;
-}
-
-.rbc-show-more {
-  color: #0073e6;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-}
+/* --- Dni poza aktualnym miesiącem --- */
 .rbc-off-range-bg {
-  background-color: #83758d;
-  color: #8a2be2;
+  background-color: var(--off-range-bg-color) !important;
 }
 
-.rbc-month-row:last-child .rbc-off-range-bg {
-  background-color: #d0f0fd;
-  color: #1e90ff;
-}
-
-.rbc-off-range .rbc-date-cell {
+.rbc-off-range .rbc-date-cell,
+.rbc-off-range .rbc-date-header {
+  color: var(--off-range-text-color) !important;
   font-weight: normal;
+}
+.rbc-off-range .rbc-date-header {
+  background-color: transparent !important; /* Usuwamy tło dla numerów dni poza zakresem */
+}
+
+/* --- Wydarzenia --- */
+.rbc-event {
+  background-color: var(--event-color, var(--event-color-default));
+  border-radius: var(--border-radius);
+  color: var(--text-color-inverse);
+  padding: 0.3em 0.6em; /* Dopasowany padding */
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  border: none;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 3px; /* Odstęp między wydarzeniami w tej samej komórce */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.rbc-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Wydarzenia w widoku miesiąca (mogą być mniejsze) */
+.rbc-month-row .rbc-event {
+  padding: 2px 5px;
+  font-size: calc(var(--font-size-sm) - 2px); /* Nieco mniejsza czcionka */
+}
+
+/* --- Święta --- */
+/* Jeśli klasa .holiday jest na komórce dnia (np. .rbc-day-bg.holiday) */
+.rbc-day-bg.holiday {
+  /* Można dodać subtelne tło dla całej komórki dnia świątecznego */
+  /* background-color: lighten(var(--event-color-holiday), 35%) !important; */
+}
+.rbc-date-cell.holiday .rbc-date-header {
+  /* Jeśli klasa jest na .rbc-date-cell */
+  color: var(--event-color-holiday);
+  font-weight: 700;
+  background-color: rgba(
+    220,
+    53,
+    69,
+    0.1
+  ); /* Lekkie tło dla numeru dnia świątecznego */
+}
+
+/* Jeśli wydarzenia świąteczne mają specjalną klasę, np. .holiday-event */
+.rbc-event.holiday-event {
+  background-color: var(--event-color-holiday);
+}
+/* Twój oryginalny styl dla świąt w rzędzie miesiąca: */
+.rbc-month-row .holiday {
+  /* Ten selektor może być zbyt ogólny, zależy od struktury HTML react-big-calendar */
+  /* background-color: var(--event-color-holiday) !important; */ /* Jeśli dotyczy tła wydarzenia */
+  /* color: var(--text-color-inverse); */
+  /* font-weight: bold; */
+}
+
+/* --- Link "Pokaż więcej" --- */
+.rbc-show-more {
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.25em 0;
+  display: block;
+  text-align: center;
+  margin-top: 0.25rem;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.rbc-show-more:hover {
+  color: var(--primary-color-darken);
+  background-color: rgba(0, 123, 255, 0.1); /* Lekkie tło przy najechaniu */
+  text-decoration: underline;
+}
+
+/* --- Modal --- */
+.modal-content {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem 2rem; /* Większy padding */
+  box-shadow: var(--box-shadow-lg);
+  /* Dodatkowe style dla pozycji, max-width etc. zależą od implementacji modala */
+}
+
+.rbc-off-range-bg {
+  background-color: var(--off-range-bg-color, #f8f9fa) !important;
+}
+
+.rbc-off-range .rbc-button-link,
+.rbc-off-range .rbc-date-header > span,
+.rbc-off-range .rbc-date-cell {
+  /* .rbc-date-cell dla ogólnego tekstu w komórce, jeśli nie ma linku */
+  color: var(--off-range-text-color, #adb5bd) !important;
+  font-weight: normal !important; /* Upewnij się, że nie jest pogrubiony */
+  font-style: normal; /* Usuń kursywę, jeśli była */
+  opacity: 0.7; /* Dodatkowe wyblaknięcie */
 }
 
 .rbc-off-range .rbc-event {
-  opacity: 0.6;
-  background-color: #ccc;
-  color: #555;
-}
-
-.rbc-today {
-  background-color: #ffeb3b;
+  opacity: var(--off-range-event-opacity, 0.5) !important;
+  background-color: var(
+    --off-range-text-color,
+    #adb5bd
+  ) !important; /* Wydarzenia też wyblakłe */
+  border-color: transparent !important; /* Usunięcie ramki wydarzenia, jeśli jest */
 }

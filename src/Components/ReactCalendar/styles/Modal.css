@@ -1,6 +1,7 @@
+/* --- Modal Overlay --- */
 .modal {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-index-overlay, 1000);
   left: 0;
   top: 0;
   width: 100%;
@@ -8,128 +9,252 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: var(--overlay-bg-color, rgba(0, 0, 0, 0.6));
+  padding: var(
+    --spacing-unit,
+    1rem
+  ); /* Dodaje padding, aby modal nie przyklejał się do krawędzi na małych ekranach */
+  box-sizing: border-box;
 }
 
+/* --- Modal Content --- */
 .modal-content {
-  background-color: #fdfdfd;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  background-color: var(--surface-color-subtle, #fdfdfd);
+  padding: calc(var(--spacing-unit, 1rem) * 1.5); /* 24px, blisko 25px */
+  border-radius: var(--border-radius-xl, 0.75rem); /* 12px */
+  box-shadow: var(--box-shadow-modal, 0 6px 15px rgba(0, 0, 0, 0.2));
   display: flex;
-  align-items: center;
   flex-direction: column;
+  align-items: stretch; /* Zmienione z 'center' na 'stretch' dla lepszego układu inputów */
+  width: 100%;
+  max-width: 500px; /* Przykładowa maksymalna szerokość */
+  overflow-y: auto; /* Na wypadek dużej zawartości */
+  max-height: 90vh; /* Zapobiega wyjściu modala poza ekran */
 }
 
 .modal-title {
-  font-size: 24px;
-  color: #000;
-  margin-bottom: 20px;
-}
-.modal-label {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-.modal-input {
-  border: 1px solid grey;
-  border-radius: 10px;
-  padding: 5px 0;
+  font-size: var(--font-size-xl, 1.5rem); /* 24px */
+  color: var(
+    --text-color,
+    #212529
+  ); /* Ciemniejszy dla lepszego kontrastu niż #000 */
+  margin-bottom: calc(var(--spacing-unit, 1rem) * 1.25); /* 20px */
   text-align: center;
+  font-weight: 600;
 }
+
+.modal-label {
+  font-size: var(--font-size-md, 1.125rem); /* 18px */
+  color: var(--text-color-light, #495057);
+  margin-bottom: calc(var(--spacing-unit, 1rem) * 0.5); /* Blisko 10px */
+  display: block; /* Dla pewności, że marginesy działają */
+}
+
+.modal-input {
+  width: 100%; /* Dzięki align-items: stretch w .modal-content */
+  border: 1px solid var(--input-border-color, #ced4da);
+  border-radius: var(
+    --border-radius-md,
+    0.3rem
+  ); /* Zamiast 10px dla spójności */
+  padding: var(--input-padding-y, 0.5rem) var(--input-padding-x, 0.75rem);
+  text-align: left; /* Zmienione z 'center' dla standardowego wyglądu inputów */
+  font-size: var(--font-size-base, 1rem);
+  margin-bottom: var(--spacing-unit, 1rem);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
+}
+
+/* --- Sekcja Przypomnienia --- */
 .modal-reminder {
   display: flex;
-  align-items: center;
-  flex-direction: column;
+  flex-direction: column; /* Utrzymane */
+  align-items: flex-start; /* Zmienione z 'center' dla lepszego układu */
+  margin-bottom: var(--spacing-unit, 1rem);
 }
+
 .modal-reminder__reminder {
-  display: flex;
-  flex-direction: column;
+  display: flex; /* Zmienione z flex-direction: column */
   align-items: center;
   cursor: pointer;
-  font-size: 18px;
+  font-size: var(--font-size-md, 1.125rem); /* 18px */
+  color: var(--text-color-light, #495057);
+  user-select: none; /* Zapobiega zaznaczaniu tekstu etykiety przy klikaniu */
 }
 
 .custom-checkbox {
-  display: none;
+  /* Pozostaje ukryty, steruje stanem przez :checked */
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
 }
 
 .custom-checkbox__box {
   width: 20px;
   height: 20px;
-  border: 2px solid #007bff;
-  border-radius: 4px;
-  background-color: #ffffff;
+  border: 2px solid var(--primary-color, #007bff);
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--surface-color, #ffffff);
   display: inline-block;
   position: relative;
-  transition: background-color 0.3s;
+  margin-right: calc(var(--spacing-unit, 1rem) * 0.5); /* Odstęp od tekstu */
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  flex-shrink: 0; /* Zapobiega kurczeniu się checkboxa */
+}
+
+/* Styl dla "ptaszka" wewnątrz checkboxa */
+.custom-checkbox__box::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--text-color-inverse, white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .custom-checkbox:checked + .custom-checkbox__box {
-  background-color: #007bff;
-}
-.modal-reminder__days {
-  padding-top: 15px;
-  display: flex;
-  flex-direction: column;
-}
-.modal-reminder__days input {
-  text-align: center;
-}
-.error-text {
-  color: red;
-  font-size: 14px;
-  margin-top: 5px;
+  background-color: var(--primary-color, #007bff);
+  border-color: var(--primary-color, #007bff);
 }
 
+.custom-checkbox:checked + .custom-checkbox__box::after {
+  display: block;
+}
+
+/* Focus state dla custom checkboxa */
+.custom-checkbox:focus + .custom-checkbox__box {
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
+}
+
+.modal-reminder__days {
+  padding-top: calc(var(--spacing-unit, 1rem) * 0.75); /* 12px, blisko 15px */
+  display: flex; /* Utrzymane */
+  flex-direction: column; /* Utrzymane */
+  padding-left: calc(
+    20px + (var(--spacing-unit, 1rem) * 0.5)
+  ); /* Wcięcie, aby zrównać z inputami pod checkboxem */
+  width: 100%;
+}
+
+.modal-reminder__days input[type="number"] {
+  /* Zakładając, że to input number */
+  text-align: center; /* Utrzymane, jeśli to preferencja */
+  max-width: 80px; /* Ograniczenie szerokości dla inputu na dni */
+  align-self: flex-start; /* Aby nie rozciągał się na 100% */
+}
+
+/* --- Komunikat o błędzie --- */
+.error-text {
+  color: var(--danger-color, red);
+  font-size: var(--font-size-sm, 0.875rem); /* 14px */
+  margin-top: calc(var(--spacing-unit, 1rem) * 0.25); /* 4px, blisko 5px */
+  display: block;
+}
+
+/* --- Color Picker --- */
 .color-picker {
   display: flex;
-  margin: 10px 0;
+  margin: var(--spacing-unit, 1rem) 0;
+  /* Dodaj style dla samego color pickera, jeśli potrzebne */
 }
 
+/* --- Przyciski w Modalu --- */
 .modal-buttons {
   display: flex;
-  margin-top: 20px;
-  gap: 15px;
+  justify-content: flex-end; /* Przyciski zazwyczaj po prawej */
+  margin-top: calc(var(--spacing-unit, 1rem) * 1.25); /* 20px */
+  gap: calc(var(--spacing-unit, 1rem) * 0.75); /* 12px, blisko 15px */
+  width: 100%;
 }
 
 .modal-buttons button {
-  padding: 8px 16px;
+  padding: var(--button-padding-y, 0.6rem) var(--button-padding-x, 1.2rem);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm, 4px);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-sm, 0.875rem); /* 14px */
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+    transform 0.1s ease-in-out;
+}
+
+.modal-buttons button:focus {
+  outline: none;
+}
+.modal-buttons button:active {
+  transform: translateY(1px);
 }
 
 .btn-save {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--success-color, #4caf50);
+  color: var(--text-color-inverse, white);
+}
+.btn-save:hover {
+  background-color: var(--success-color-darken, #3e8e41);
+}
+.btn-save:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--success-color-rgb, 40, 167, 69), 0.35);
 }
 
 .btn-delete {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--danger-color, #f44336);
+  color: var(--text-color-inverse, white);
+}
+.btn-delete:hover {
+  background-color: var(--danger-color-darken, #d32f2f);
+}
+.btn-delete:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--danger-color-rgb, 220, 53, 69), 0.35);
 }
 
 .btn-cancel {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--secondary-color, #6c757d);
+  color: var(--text-color-inverse, white);
+  /* Opcjonalnie: można dodać subtelniejszą ramkę zamiast tła */
+  /* background-color: transparent; */
+  /* color: var(--secondary-color); */
+  /* border: 1px solid var(--secondary-color); */
 }
-
-.btn-save:hover,
-.btn-delete:hover,
 .btn-cancel:hover {
-  filter: brightness(1.1);
+  background-color: var(--secondary-color-darken, #5a6268);
+  /* border-color: var(--secondary-color-darken); */ /* jeśli używasz wersji z ramką */
+}
+.btn-cancel:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--secondary-color-rgb, 108, 117, 125), 0.35);
 }
 
+/* --- Powiadomienie o Przypomnieniu --- */
 .reminder-notification {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #f0ad4e;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  font-size: 14px;
+  bottom: calc(var(--spacing-unit, 1rem) * 1.25); /* 20px */
+  right: calc(var(--spacing-unit, 1rem) * 1.25); /* 20px */
+  background-color: var(--warning-color, #f0ad4e);
+  color: var(
+    --text-color-on-warning,
+    #212529
+  ); /* Ciemny tekst dla lepszego kontrastu */
+  padding: calc(var(--spacing-unit, 1rem) * 0.75); /* 12px, blisko 10px */
+  border-radius: var(
+    --border-radius-md,
+    0.3rem
+  ); /* Zamiast 5px dla spójności */
+  box-shadow: var(
+    --box-shadow-lg,
+    0 0.5rem 1rem rgba(0, 0, 0, 0.15)
+  ); /* Zamiast 0 0 10px */
+  z-index: var(--z-index-notification, 1050);
+  font-size: var(--font-size-sm, 0.875rem); /* 14px */
+  /* Można dodać animację pojawiania się */
 }
